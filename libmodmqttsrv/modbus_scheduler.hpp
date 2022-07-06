@@ -26,8 +26,8 @@ namespace modmqttd {
                 std::chrono::steady_clock::duration& outDuration,
                 const std::chrono::time_point<std::chrono::steady_clock>& timePoint
             );
-        private:
-            boost::log::sources::severity_logger<Log::severity> log;
+//        private:
+//            boost::log::sources::severity_logger<Log::severity> log;
     };
 }
 

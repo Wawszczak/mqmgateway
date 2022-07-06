@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "mockedmqttimpl.hpp"
 #include "libmodmqttsrv/mqttclient.hpp"
 
@@ -41,7 +42,7 @@ MockedMqttImpl::publish(const char* topic, int len, const void* data) {
     if (it != mSubscriptions.end()) {
         mOwner->onMessage(topic, data, len);
     }
-    BOOST_LOG_SEV(log, modmqttd::Log::info) << "PUBLISH " << topic << ": <" << v.val << ">";
+    //BOOST_LOG_SEV(log, modmqttd::Log::info) << "PUBLISH " << topic << ": <" << v.val << ">";
     mPublishedTopics.insert(std::make_pair(topic, mPublishedTopics.size() + 1));
     mCondition.notify_all();
 }
@@ -58,7 +59,7 @@ MockedMqttImpl::on_log(int level, const char* message) {}
 
 bool
 MockedMqttImpl::waitForPublish(const char* topic, std::chrono::milliseconds timeout) {
-    BOOST_LOG_SEV(log, modmqttd::Log::info) << "Waiting for publish on: [" << topic << "]";
+    //BOOST_LOG_SEV(log, modmqttd::Log::info) << "Waiting for publish on: [" << topic << "]";
     std::unique_lock<std::mutex> lck(mMutex);
     bool published = mPublishedTopics.find(topic) != mPublishedTopics.end();
     if (!published) {
@@ -111,7 +112,7 @@ MockedMqttImpl::waitForFirstPublish(std::chrono::milliseconds timeout) {
 
     std::string topic = it->first;
     mPublishedTopics.clear();
-    BOOST_LOG_SEV(log, modmqttd::Log::info) << "Got first published topic: [" << topic << "]";
+    //BOOST_LOG_SEV(log, modmqttd::Log::info) << "Got first published topic: [" << topic << "]";
     return topic;
 }
 
@@ -119,7 +120,7 @@ MockedMqttImpl::waitForFirstPublish(std::chrono::milliseconds timeout) {
 std::string
 MockedMqttImpl::waitForMqttValue(const char* topic, const char* expected, std::chrono::milliseconds timeout) {
     std::unique_lock<std::mutex> lck(mMutex);
-    BOOST_LOG_SEV(log, modmqttd::Log::info) << "Waiting for '" << expected << "' on: [" << topic << "]";
+    //BOOST_LOG_SEV(log, modmqttd::Log::info) << "Waiting for '" << expected << "' on: [" << topic << "]";
     std::string ret;
     auto start = std::chrono::steady_clock::now();
     int dur;
@@ -149,7 +150,7 @@ MockedMqttImpl::hasTopic(const char* topic) {
 
 void
 MockedMqttImpl::resetBroker() {
-    BOOST_LOG_SEV(log, modmqttd::Log::info) << "MQTT Broker simulated restart";
+    //BOOST_LOG_SEV(log, modmqttd::Log::info) << "MQTT Broker simulated restart";
     {
         //clear all values and subscriptions
         std::unique_lock<std::mutex> lck(mMutex);

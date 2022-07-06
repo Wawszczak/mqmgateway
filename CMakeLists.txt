@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.13)
 project(modmqttd VERSION 1.0.0)
 
-find_package(Boost 1.54.0 REQUIRED COMPONENTS log program_options)
-set(Boost_USE_STATIC_LIBS        OFF)
-set(Boost_USE_MULTITHREADED      ON)
-set(Boost_USE_STATIC_RUNTIME     OFF)
-set(BOOST_ALL_DYN_LINK           ON) 
+#find_package(Boost 1.54.0 REQUIRED COMPONENTS log program_options)
+#set(Boost_USE_STATIC_LIBS        OFF)
+#set(Boost_USE_MULTITHREADED      ON)
+#set(Boost_USE_STATIC_RUNTIME     OFF)
+#set(BOOST_ALL_DYN_LINK           ON) 
 
 find_package(PkgConfig)
 pkg_check_modules(LIBMODBUS REQUIRED libmodbus)
@@ -14,15 +14,19 @@ find_package(Threads)
 
 find_package(yaml-cpp REQUIRED)
 find_package(RapidJSON REQUIRED)
+find_package(spdlog REQUIRED)
 
 find_path(EXPRTK_INCLUDE_DIR "exprtk.hpp")
+
 message(STATUS "EXPRTK_INCLUDE_DIR => ${EXPRTK_INCLUDE_DIR}")
 
-include_directories(${Boost_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${RAPIDJSON_INCLUDE_DIRS} .)
-link_directories(${Boost_LIBRARY_DIRS})
+#include_directories(${Boost_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${RAPIDJSON_INCLUDE_DIRS} .)
+include_directories(${YAML_CPP_INCLUDE_DIR} ${RAPIDJSON_INCLUDE_DIRS} .)
+include_directories("/usr/local/include")
+#link_directories(${Boost_LIBRARY_DIRS})
 
 # force boost dynamic linking
-add_definitions(-DBOOST_LOG_DYN_LINK)
+#add_definitions(-DBOOST_LOG_DYN_LINK)
 
 add_subdirectory(libmodmqttconv)
 add_subdirectory(libmodmqttsrv)

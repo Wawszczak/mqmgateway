@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <yaml-cpp/yaml.h>
 #include "exceptions.hpp"
-#include <boost/version.hpp>
+//#include <boost/version.hpp>
 
 namespace modmqttd {
 

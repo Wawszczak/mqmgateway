@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/config.hpp> // for BOOST_SYMBOL_EXPORT
+//#include <boost/config.hpp> // for BOOST_SYMBOL_EXPORT
 
 #include "libmodmqttconv/converterplugin.hpp"
 
@@ -11,5 +11,5 @@ class StdConvPlugin : ConverterPlugin {
         virtual ~StdConvPlugin() {}
 };
 
-extern "C" BOOST_SYMBOL_EXPORT StdConvPlugin converter_plugin;
+//extern "C" BOOST_SYMBOL_EXPORT StdConvPlugin converter_plugin;
 StdConvPlugin converter_plugin;

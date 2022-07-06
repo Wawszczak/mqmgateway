@@ -2,6 +2,7 @@
 #include <vector>
 #include <stack>
 #include <mutex>
+#include <algorithm>
 #include <condition_variable>
 
 #include "libmodmqttconv/converterplugin.hpp"
@@ -28,7 +29,7 @@ class ModMqtt {
         static void setModbusContextFactory(const std::shared_ptr<IModbusFactory>& factory);
         static IModbusFactory& getModbusFactory() { return *mModbusFactory; }
 
-        boost::log::sources::severity_logger<Log::severity> log;
+//        boost::log::sources::severity_logger<Log::severity> log;
         ModMqtt();
         void addConverterPath(const std::string& path) { mConverterPaths.push_back(path); }
         void init(const std::string& configPath);
@@ -50,7 +51,7 @@ class ModMqtt {
         std::shared_ptr<MqttClient> mMqtt;
         std::vector<std::shared_ptr<ModbusClient>> mModbusClients;
 
-        std::vector<boost::shared_ptr<ConverterPlugin>> mConverterPlugins;
+        std::vector<std::shared_ptr<ConverterPlugin>> mConverterPlugins;
 
         void initServer(const YAML::Node& config);
         void initBroker(const YAML::Node& config);
@@ -67,7 +68,7 @@ class ModMqtt {
         void processModbusMessages();
 
         bool hasConverterPlugin(const std::string& name) const;
-        boost::shared_ptr<ConverterPlugin> initConverterPlugin(const std::string& name);
+        std::shared_ptr<ConverterPlugin> initConverterPlugin(const std::string& name);
         std::shared_ptr<IStateConverter> createConverterInstance(const std::string plugin, const std::string& converter) const;
         std::shared_ptr<IStateConverter> createConverter(const YAML::Node& data) const;
 

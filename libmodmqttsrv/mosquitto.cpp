@@ -96,7 +96,7 @@ Mosquitto::Mosquitto() {
 
 void
 Mosquitto::connect(const MqttBrokerConfig& config) {
-    BOOST_LOG_SEV(log, Log::info) << "Connecting to " << config.mHost << ":" << config.mPort;
+//    BOOST_LOG_SEV(log, Log::info) << "Connecting to " << config.mHost << ":" << config.mPort;
     int rc = mosquitto_connect_async(mMosq, config.mHost.c_str(),
             config.mPort,
             config.mKeepalive);
@@ -106,7 +106,7 @@ Mosquitto::connect(const MqttBrokerConfig& config) {
     }
 
     if (rc != MOSQ_ERR_SUCCESS) {
-        BOOST_LOG_SEV(log, Log::error) << "Error connecting to mqtt broker: " << returnCodeToStr(rc);
+//        BOOST_LOG_SEV(log, Log::error) << "Error connecting to mqtt broker: " << returnCodeToStr(rc);
     } else {
         mosquitto_reconnect_delay_set(mMosq, 3,60, true);
         mosquitto_connect_callback_set(mMosq, on_connect_wrapper);
@@ -119,10 +119,10 @@ Mosquitto::connect(const MqttBrokerConfig& config) {
         mosquitto_log_callback_set(mMosq, on_log_wrapper);
 
 
-        BOOST_LOG_SEV(log, Log::debug) << "Waiting for connection event";
+//        BOOST_LOG_SEV(log, Log::debug) << "Waiting for connection event";
         int rc = mosquitto_loop_start(mMosq);
         if (rc != MOSQ_ERR_SUCCESS) {
-            BOOST_LOG_SEV(log, Log::error) << "Error processing network traffic: " << returnCodeToStr(rc);
+//            BOOST_LOG_SEV(log, Log::error) << "Error processing network traffic: " << returnCodeToStr(rc);
         }
     }
 }
@@ -163,13 +163,13 @@ Mosquitto::publish(const char* topic, int len, const void* data) {
 
 void
 Mosquitto::on_disconnect(int rc) {
-    BOOST_LOG_SEV(log, Log::info) << "Disconnected from mqtt broker, code:" << returnCodeToStr(rc);
+//    BOOST_LOG_SEV(log, Log::info) << "Disconnected from mqtt broker, code:" << returnCodeToStr(rc);
     mOwner->onDisconnect();
 }
 
 void
 Mosquitto::on_connect(int rc) {
-    BOOST_LOG_SEV(log, Log::info) << "Connection estabilished";
+//    BOOST_LOG_SEV(log, Log::info) << "Connection estabilished";
     mOwner->onConnect();
 }
 
@@ -177,19 +177,19 @@ void
 Mosquitto::on_log(int level, const char* message) {
     switch(level) {
         case MOSQ_LOG_INFO:
-            BOOST_LOG_SEV(log, Log::info) << message;
+//            BOOST_LOG_SEV(log, Log::info) << message;
         break;
         case MOSQ_LOG_NOTICE:
-            BOOST_LOG_SEV(log, Log::info) << message;
+//            BOOST_LOG_SEV(log, Log::info) << message;
         break;
         case MOSQ_LOG_WARNING:
-            BOOST_LOG_SEV(log, Log::warn) << message;
+//            BOOST_LOG_SEV(log, Log::warn) << message;
         break;
         case  MOSQ_LOG_ERR:
-            BOOST_LOG_SEV(log, Log::error) << message;
+//            BOOST_LOG_SEV(log, Log::error) << message;
         break;
         case MOSQ_LOG_DEBUG:
-            BOOST_LOG_SEV(log, Log::debug) << message;
+//            BOOST_LOG_SEV(log, Log::debug) << message;
         break;
     }
 }

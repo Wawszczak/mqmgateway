@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <map>
 #include <set>
+#include <cstring>
 
 #include "libmodmqttsrv/imqttimpl.hpp"
 #include "libmodmqttsrv/logging.hpp"
@@ -68,7 +69,7 @@ class MockedMqttImpl : public modmqttd::IMqttImpl {
         void resetBroker();
     private:
         modmqttd::MqttClient* mOwner;
-        boost::log::sources::severity_logger<modmqttd::Log::severity> log;
+        //boost::log::sources::severity_logger<modmqttd::Log::severity> log;
 
         std::map<std::string, MqttValue> mTopics;
         std::set<std::string> mSubscriptions;

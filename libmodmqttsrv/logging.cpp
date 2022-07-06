@@ -3,27 +3,27 @@
 #include <ostream>
 #include <fstream>
 #include <iomanip>
-#include <boost/log/core.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/attributes.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/attributes/clock.hpp>
-#include <boost/parameter/keyword.hpp>
-#include <boost/log/sinks.hpp>
-#include <boost/core/null_deleter.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+//#include <boost/log/core.hpp>
+//#include <boost/log/expressions.hpp>
+//#include <boost/log/attributes.hpp>
+//#include <boost/log/utility/setup/file.hpp>
+//#include <boost/log/utility/setup/common_attributes.hpp>
+//#include <boost/log/attributes/clock.hpp>
+//#include <boost/parameter/keyword.hpp>
+//#include <boost/log/sinks.hpp>
+//#include <boost/core/null_deleter.hpp>
+//#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "logging.hpp"
 
-namespace params = boost::log::keywords;
-namespace sinks = boost::log::sinks;
-namespace expr = boost::log::expressions;
-namespace attrs = boost::log::attributes;
+//namespace params = boost::log::keywords;
+//namespace sinks = boost::log::sinks;
+//namespace expr = boost::log::expressions;
+//namespace attrs = boost::log::attributes;
 
 namespace modmqttd {
 
-BOOST_LOG_ATTRIBUTE_KEYWORD(log_severity, "Severity", Log::severity)
+//BOOST_LOG_ATTRIBUTE_KEYWORD(log_severity, "Severity", Log::severity)
 
 std::ostream& operator<< (std::ostream& strm, Log::severity level)
 {
@@ -46,8 +46,8 @@ std::ostream& operator<< (std::ostream& strm, Log::severity level)
 
 
 void Log::init_logging(severity level) {
-    typedef sinks::synchronous_sink< sinks::text_ostream_backend > text_sink;
-    boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
+/*    typedef sinks::synchronous_sink< sinks::text_ostream_backend > text_sink;
+    text_sink* sink = new text_sink();
 
     boost::shared_ptr< std::ostream > stream(&std::clog, boost::null_deleter());
     sink->locked_backend()->add_stream(stream);
@@ -68,6 +68,7 @@ void Log::init_logging(severity level) {
     //TODO remove timestamp, journalctl will add it anyway?
     core->add_global_attribute("TimeStamp", attrs::local_clock());
 
+*/
 }
 
 }

@@ -137,9 +137,9 @@ MockedModbusContext::readModbusRegister(int slaveId, const modmqttd::RegisterPol
     std::map<int, Slave>::iterator it = findOrCreateSlave(slaveId);
     uint16_t ret = it->second.read(regData, mInternalOperation);
     if (mInternalOperation)
-        BOOST_LOG_SEV(log, modmqttd::Log::info) << "MODBUS: " << mNetworkName
-            << "." << it->second.mId << "." << regData.mRegister
-            << " READED: " << ret;
+        //BOOST_LOG_SEV(log, modmqttd::Log::info) << "MODBUS: " << mNetworkName
+        //    << "." << it->second.mId << "." << regData.mRegister
+        //    << " READED: " << ret;
 
     mInternalOperation = false;
     return ret;
@@ -156,9 +156,9 @@ MockedModbusContext::writeModbusRegister(const modmqttd::MsgRegisterValue& msg) 
     std::map<int, Slave>::iterator it = findOrCreateSlave(msg.mSlaveId);
 
     if (mInternalOperation)
-        BOOST_LOG_SEV(log, modmqttd::Log::info) << "MODBUS: " << mNetworkName
-            << "." << it->second.mId << "." << msg.mRegisterNumber
-            << " WRITE: " << msg.mValue;
+        //BOOST_LOG_SEV(log, modmqttd::Log::info) << "MODBUS: " << mNetworkName
+        //    << "." << it->second.mId << "." << msg.mRegisterNumber
+        //    << " WRITE: " << msg.mValue;
     it->second.write(msg, mInternalOperation);
     mInternalOperation = false;
 }

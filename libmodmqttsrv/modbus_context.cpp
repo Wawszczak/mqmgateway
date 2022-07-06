@@ -6,7 +6,7 @@ void
 ModbusContext::init(const ModbusNetworkConfig& config)
 {
     if (config.mType == ModbusNetworkConfig::TCPIP) {
-        BOOST_LOG_SEV(log, Log::info) << "Connecting to " << config.mAddress << ":" << config.mPort;
+//        BOOST_LOG_SEV(log, Log::info) << "Connecting to " << config.mAddress << ":" << config.mPort;
         mCtx = modbus_new_tcp(config.mAddress.c_str(), config.mPort);
         modbus_set_error_recovery(mCtx,
             (modbus_error_recovery_mode)
@@ -33,7 +33,7 @@ ModbusContext::connect() {
         modbus_close(mCtx);
 
     if (modbus_connect(mCtx) == -1) {
-        BOOST_LOG_SEV(log, Log::error) << "modbus connection failed("<< errno << ") : " << modbus_strerror(errno);
+//        BOOST_LOG_SEV(log, Log::error) << "modbus connection failed("<< errno << ") : " << modbus_strerror(errno);
         mIsConnected = false;
     } else {
         mIsConnected = true;

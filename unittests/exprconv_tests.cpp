@@ -1,15 +1,15 @@
 #include <libmodmqttsrv/config.hpp>
 #include "catch2/catch.hpp"
-#include <boost/dll/import.hpp>
+//#include <boost/dll/import.hpp>
 
 #include "libmodmqttconv/converterplugin.hpp"
 
 #ifdef HAVE_EXPRTK
-
+#ifdef FIXME_PLUGINS
 TEST_CASE ("Exprtk converter test") {
     std::string stdconv_path = "../exprconv/exprconv.so";
 
-    boost::shared_ptr<ConverterPlugin> plugin = boost_dll_import<ConverterPlugin>(
+    std::shared_ptr<ConverterPlugin> plugin = boost_dll_import<ConverterPlugin>(
         stdconv_path,
         "converter_plugin",
         boost::dll::load_mode::append_decorations
@@ -49,6 +49,6 @@ TEST_CASE ("Exprtk converter test with precission") {
 
     REQUIRE(ret.getString() == "3.333");
 }
-
+#endif
 
 #endif

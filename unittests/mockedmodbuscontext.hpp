@@ -58,7 +58,7 @@ class MockedModbusContext : public modmqttd::IModbusContext {
         bool mInternalOperation = false;
         std::string mNetworkName;
     private:
-        boost::log::sources::severity_logger<modmqttd::Log::severity> log;
+        //boost::log::sources::severity_logger<modmqttd::Log::severity> log;
         std::mutex mMutex;
         std::map<int, Slave> mSlaves;
 
