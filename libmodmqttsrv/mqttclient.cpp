@@ -3,6 +3,9 @@
 #include "mqttclient.hpp"
 #include "exceptions.hpp"
 #include "modmqtt.hpp"
+#include <iostream>
+
+using namespace std;
 
 namespace modmqttd {
 
@@ -41,17 +44,17 @@ void
 MqttClient::shutdown() {
     switch(mConnectionState) {
         case State::CONNECTED:
-            //BOOST_LOG_SEV(log, Log::info) << "Disconnecting from mqtt broker";
+            cout << Log::severity::info << "Disconnecting from mqtt broker" << endl;
             mConnectionState = State::DISCONNECTING;
             mMqttImpl->disconnect();
         break;
         case State::CONNECTING:
             //we do not send disconnect mqtt request if not connected
-            //BOOST_LOG_SEV(log, Log::info) << "Cancelling connection request";
+            cout << Log::severity::info << "Cancelling connection request" << endl;
             mIsStarted = false;
             break;
         case State::DISCONNECTING:
-            //BOOST_LOG_SEV(log, Log::info) << "Shutdown already in progress, waiting for clean disconnect";
+            cout << Log::severity::info << "Shutdown already in progress, waiting for clean disconnect" << endl;
             break;
         default:
             mIsStarted = false;
@@ -67,11 +70,11 @@ MqttClient::onDisconnect() {
     switch(mConnectionState) {
         case State::CONNECTED:
         case State::CONNECTING:
-            //BOOST_LOG_SEV(log, Log::info) << "reconnecting to mqtt broker";
+            cout << Log::severity::info << "reconnecting to mqtt broker" << endl;
             mMqttImpl->reconnect();
             break;
         case State::DISCONNECTING:
-            //BOOST_LOG_SEV(log, Log::info) << "Stopping mosquitto message loop";
+            cout << Log::severity::info << "Stopping mosquitto message loop" << endl;
             mConnectionState = State::DISCONNECTED;
             mMqttImpl->stop();
             mIsStarted = false;
@@ -83,7 +86,7 @@ MqttClient::onDisconnect() {
 
 void
 MqttClient::onConnect() {
-	//BOOST_LOG_SEV(log, Log::info) << "Mqtt conected, sending subscriptions...";
+	cout << Log::severity::info << "Mqtt conected, sending subscriptions..." << endl;
 
     for(std::vector<MqttObject>::const_iterator obj = mObjects.begin(); obj != mObjects.end(); obj++)
         for(std::vector<MqttObjectCommand>::const_iterator it = obj->mCommands.begin(); it != obj->mCommands.end(); it++)
@@ -102,7 +105,7 @@ MqttClient::onConnect() {
         (*it)->sendMqttNetworkIsUp(true);
     }
 
-	//BOOST_LOG_SEV(log, Log::info) << "Mqtt ready to process messages";
+	cout << Log::severity::info << "Mqtt ready to process messages" << endl;
 }
 
 void
@@ -141,7 +144,7 @@ void
 MqttClient::publishState(const MqttObject& obj) {
     int msgId;
     std::string messageData(obj.mState.createMessage());
-    //BOOST_LOG_SEV(log, Log::debug) << "Publish on topic " << obj.getStateTopic() << ": " << messageData;
+    cout << Log::severity::debug << "Publish on topic " << obj.getStateTopic() << ": " << messageData << endl;
     mMqttImpl->publish(obj.getStateTopic().c_str(), messageData.length(), messageData.c_str());
 }
 
@@ -238,15 +241,15 @@ MqttClient::onMessage(const char* topic, const void* payload, int payloadlen) {
             [&network](const std::shared_ptr<ModbusClient>& client) -> bool { return client->mName == network; }
         );
         if (it == mModbusClients.end()) {
-            //BOOST_LOG_SEV(log, Log::error) << "Modbus network " << network << " not found for command  " << topic << ", dropping message";
+            cout << Log::severity::error << "Modbus network " << network << " not found for command  " << topic << ", dropping message" << endl;
         } else {
             uint16_t value = convertMqttPayload(command, payload, payloadlen);
             (*it)->sendCommand(command, value);
         }
     } catch (const MqttPayloadConversionException& ex) {
-        //BOOST_LOG_SEV(log, Log::error) << "Value error for " << topic << ":" << ex.what();
+        cout << Log::error << "Value error for " << topic << ":" << ex.what() << endl;
     } catch (const ObjectCommandNotFoundException&) {
-        //BOOST_LOG_SEV(log, Log::error) << "No command for topic " << topic << ", dropping message";
+        cout << Log::error << "No command for topic " << topic << ", dropping message" << endl;
     }
 }
 

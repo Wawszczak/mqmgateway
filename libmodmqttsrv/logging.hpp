@@ -17,7 +17,11 @@ class Log {
             debug
         };
 
+	static severity LogLevel ;
         static void init_logging(severity level);
 };
+
+std::ostream& operator<< (std::ostream& strm, Log::severity level);
+std::ostream& endl( std::ostream& os );
 
 }

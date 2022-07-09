@@ -1,7 +1,11 @@
 #include "modbus_scheduler.hpp"
 #include "modbus_types.hpp"
+#include <iostream>
+#include <sstream>
 
 namespace modmqttd {
+
+	using namespace std;
 
 std::map<int, std::vector<std::shared_ptr<RegisterPoll>>>
 ModbusScheduler::getRegistersToPoll(
@@ -11,7 +15,7 @@ ModbusScheduler::getRegistersToPoll(
 ) {
     std::map<int, std::vector<std::shared_ptr<RegisterPoll>>> ret;
 
-    //BOOST_LOG_SEV(log, Log::debug) << "initial outduration " << std::chrono::duration_cast<std::chrono::milliseconds>(outDuration).count();
+    cout << Log::severity::debug << "initial outduration " << std::chrono::duration_cast<std::chrono::milliseconds>(outDuration).count() << endl;
 
     for(std::map<int, std::vector<std::shared_ptr<RegisterPoll>>>::const_iterator slave = registers.begin();
         slave != registers.end(); slave++)
@@ -24,19 +28,19 @@ ModbusScheduler::getRegistersToPoll(
             auto time_passed = timePoint - reg.mLastRead;
             auto time_to_poll = reg.mRefresh;
 
-            //BOOST_LOG_SEV(log, Log::debug) << "time passed: " << std::chrono::duration_cast<std::chrono::milliseconds>(time_to_poll).count();
+            cout << Log::severity::debug << "time passed: " << std::chrono::duration_cast<std::chrono::milliseconds>(time_to_poll).count() << endl;
 
             if (time_passed >= reg.mRefresh) {
-//                BOOST_LOG_SEV(log, Log::debug) << "Register " << slave->first << "." << reg.mRegister << " (0x" << std::hex << slave->first << ".0x" << std::hex << reg.mRegister << ")"
-//                                << " added, last read " << std::chrono::duration_cast<std::chrono::milliseconds>(time_passed).count() << "ms ago";
+                cout << Log::severity::debug << "Register " << slave->first << "." << reg.mRegister << " (0x" << std::hex << slave->first << ".0x" << std::hex << reg.mRegister << ")"
+                                << " added, last read " << std::chrono::duration_cast<std::chrono::milliseconds>(time_passed).count() << "ms ago" << endl;
                 ret[slave->first].push_back(*reg_it);
             } else {
                 time_to_poll = reg.mRefresh - time_passed;
             }
             if (outDuration > time_to_poll) {
                 outDuration = time_to_poll;
-//                BOOST_LOG_SEV(log, Log::debug) << "Wait duration set to " << std::chrono::duration_cast<std::chrono::milliseconds>(time_to_poll).count()
-//                                << "ms as next poll for register " << slave->first << "." << reg.mRegister << " (0x" << std::hex << slave->first << ".0x" << std::hex << reg.mRegister << ")";
+                cout << Log::severity::debug << "Wait duration set to " << std::chrono::duration_cast<std::chrono::milliseconds>(time_to_poll).count() 
+                                << "ms as next poll for register " << slave->first << "." << reg.mRegister << " (0x" << std::hex << slave->first << ".0x" << std::hex << reg.mRegister << ")" << endl;
             }
         }
     }

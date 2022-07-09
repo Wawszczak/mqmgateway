@@ -8,69 +8,49 @@
 
 //namespace args = boost::program_options;
 using namespace std;
+using namespace modmqttd;
 
 modmqttd::ModMqtt server;
 
-/*void logCriticalError(std::shared_ptr<boost::log::sources::severity_logger<modmqttd::Log::severity>>& log,
-        const char* message)
-{
-    if (log != NULL)
-        BOOST_LOG_SEV(*log, modmqttd::Log::critical) << message;
-    else
-        cerr << message << endl;
-}
-*/
-
 int main(int ac, char* av[]) {
 //    std::shared_ptr<boost::log::sources::severity_logger<modmqttd::Log::severity>> log;
-    if(ac != 3)
-	    return EXIT_FAILURE;
-    std::string configPath(av[1]);
-//    try {
-//        args::options_description desc("Arguments");
+     // TODO add version information
+     cout << Log::severity::info << "modmqttd is starting" << endl;
 
-        int logLevel = atoi(av[2]);
-
-//        desc.add_options()
-//            ("help", "produce help message")
-//            ("loglevel, l", args::value<int>(&logLevel), "set log level 1-5, higher is more verbose")
-//            ("config, c", args::value<string>(&configPath), "path to configuration file")
-//        ;
-
-//        args::variables_map vm;
-//        args::store(args::parse_command_line(ac, av, desc), vm);
-//        args::notify(vm);
-
-//        if (vm.count("help")) {
-//            cout << desc << "\n";
-//            return EXIT_SUCCESS;
-//        }
-
-//        modmqttd::Log::severity level = modmqttd::Log::severity::info;
-//        if (vm.count("loglevel")) {
-	modmqttd::Log::severity  level = (modmqttd::Log::severity)(logLevel - 1);
-//        }
-
+    int LogLevel = 1;
+    char* LOG_LEVEL  = NULL;
+    if(LOG_LEVEL = std::getenv("LOG_LEVEL"))
+    {
+        LogLevel = atoi(LOG_LEVEL);
+	cout << Log::severity::info << "Using LogLevel from Environment: " << LogLevel << endl;
+    }
+    else
+	cout << Log::severity::info << "Using Default LogLevel: 1 [Critical]\n";
+    std::string configPath("/etc/mqmgateway.yaml");
+    if(const char* CONFIG_PATH = std::getenv("CONFIG_PATH"))
+    {
+        configPath = CONFIG_PATH ;
+        cout << Log::severity::info << "Using configPath from Environment: " << configPath << endl;
+    }
+    else
+        cout << Log::severity::info << "Using Default configPath: " << configPath << endl;
+    try {
+	modmqttd::Log::severity  level = (modmqttd::Log::severity)(LogLevel - 1);
+        cout << Log::severity::info << "Using converted severity " << static_cast<int>(level) << endl;
         modmqttd::Log::init_logging(level);
-        // temporary logger used in main before classes are initalized
-        //log.reset(new boost::log::sources::severity_logger<modmqttd::Log::severity>());
-        // TODO add version information
-        //BOOST_LOG_SEV(*log, modmqttd::Log::info) << "modmqttd is starting";
-
+        cout << Log::severity::info << "Log initialized " << endl;
         server.init(configPath);
+        cout << Log::severity::info << "Server initialized " << endl;
         server.start();
 
-        //BOOST_LOG_SEV(*log, modmqttd::Log::info) << "modmqttd stopped";
+        cout << Log::severity::info << "modmqttd stopped" << endl;
         return EXIT_SUCCESS;
-//    } catch (const YAML::BadFile& ex) {
-//        if (configPath == "")
-//            configPath = boost::filesystem::current_path().native();
-//        std::string msg = "Failed to load configuration from "s + configPath;
-        //logCriticalError(log, msg.c_str());
-//    } catch (const std::exception& ex) {
-        //logCriticalError(log, ex.what());
-//    } catch (...) {
-        //logCriticalError(log, "Unknown initialization error occured");
-//    }
-//    return EXIT_FAILURE;
+    } catch (const YAML::BadFile& ex) {
+        cout << Log::severity::error << "Failed to load configuration from " + configPath << endl;
+    } catch (const std::exception& ex) {
+        cout << Log::severity::error << ex.what() << endl;
+    } catch (...) {
+        cout << Log::severity::error << "Unknown initialization error occured" << endl;
+    }
+    return EXIT_FAILURE;
 }

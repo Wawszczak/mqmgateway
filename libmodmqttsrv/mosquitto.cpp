@@ -3,6 +3,8 @@
 #include "mosquitto.hpp"
 #include "exceptions.hpp"
 #include "mqttclient.hpp"
+#include <iostream>
+using namespace std;
 
 namespace modmqttd {
 
@@ -96,7 +98,7 @@ Mosquitto::Mosquitto() {
 
 void
 Mosquitto::connect(const MqttBrokerConfig& config) {
-//    BOOST_LOG_SEV(log, Log::info) << "Connecting to " << config.mHost << ":" << config.mPort;
+    cout << Log::severity::info << "Connecting to " << config.mHost << ":" << config.mPort << endl;
     int rc = mosquitto_connect_async(mMosq, config.mHost.c_str(),
             config.mPort,
             config.mKeepalive);
@@ -106,7 +108,7 @@ Mosquitto::connect(const MqttBrokerConfig& config) {
     }
 
     if (rc != MOSQ_ERR_SUCCESS) {
-//        BOOST_LOG_SEV(log, Log::error) << "Error connecting to mqtt broker: " << returnCodeToStr(rc);
+        cout << Log::severity::error << "Error connecting to mqtt broker: " << returnCodeToStr(rc) << endl;
     } else {
         mosquitto_reconnect_delay_set(mMosq, 3,60, true);
         mosquitto_connect_callback_set(mMosq, on_connect_wrapper);
@@ -119,10 +121,10 @@ Mosquitto::connect(const MqttBrokerConfig& config) {
         mosquitto_log_callback_set(mMosq, on_log_wrapper);
 
 
-//        BOOST_LOG_SEV(log, Log::debug) << "Waiting for connection event";
+        cout << Log::severity::debug << "Waiting for connection event" << endl;
         int rc = mosquitto_loop_start(mMosq);
         if (rc != MOSQ_ERR_SUCCESS) {
-//            BOOST_LOG_SEV(log, Log::error) << "Error processing network traffic: " << returnCodeToStr(rc);
+            cout << Log::severity::error << "Error processing network traffic: " << returnCodeToStr(rc) << endl;
         }
     }
 }
@@ -163,13 +165,13 @@ Mosquitto::publish(const char* topic, int len, const void* data) {
 
 void
 Mosquitto::on_disconnect(int rc) {
-//    BOOST_LOG_SEV(log, Log::info) << "Disconnected from mqtt broker, code:" << returnCodeToStr(rc);
+    cout << Log::severity::info << "Disconnected from mqtt broker, code:" << returnCodeToStr(rc) << endl;
     mOwner->onDisconnect();
 }
 
 void
 Mosquitto::on_connect(int rc) {
-//    BOOST_LOG_SEV(log, Log::info) << "Connection estabilished";
+    cout <<Log::severity::info << "Connection estabilished" << endl;
     mOwner->onConnect();
 }
 

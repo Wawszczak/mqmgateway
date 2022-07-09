@@ -3,72 +3,81 @@
 #include <ostream>
 #include <fstream>
 #include <iomanip>
-//#include <boost/log/core.hpp>
-//#include <boost/log/expressions.hpp>
-//#include <boost/log/attributes.hpp>
-//#include <boost/log/utility/setup/file.hpp>
-//#include <boost/log/utility/setup/common_attributes.hpp>
-//#include <boost/log/attributes/clock.hpp>
-//#include <boost/parameter/keyword.hpp>
-//#include <boost/log/sinks.hpp>
-//#include <boost/core/null_deleter.hpp>
-//#include <boost/date_time/posix_time/posix_time.hpp>
+#include <chrono>
+#include <ctime>
+#include <iostream>
+#include <cstdio>
 
 #include "logging.hpp"
 
-//namespace params = boost::log::keywords;
-//namespace sinks = boost::log::sinks;
-//namespace expr = boost::log::expressions;
-//namespace attrs = boost::log::attributes;
+using namespace std ;
 
 namespace modmqttd {
 
-//BOOST_LOG_ATTRIBUTE_KEYWORD(log_severity, "Severity", Log::severity)
-
-std::ostream& operator<< (std::ostream& strm, Log::severity level)
+const char* LogLevelToString(Log::severity level)
 {
     static const char* strings[] =
     {
-        "CRITICAL",
-        "ERROR",
-        "WARNING",
-        "INFO",
-        "DEBUG"
+        "[CRITICAL] ",
+        "[ERROR]    ",
+        "[WARNING]  ",
+        "[INFO]     ",
+        "[DEBUG]    ",
+	"[UNKNOWN]  "
     };
 
-    if (static_cast< std::size_t >(level) < sizeof(strings) / sizeof(*strings))
-        strm << strings[level];
+    if (static_cast< std::size_t >(level) < (sizeof(strings) / sizeof(*strings) - 1))
+        return strings[level];
     else
-        strm << static_cast< int >(level);
+        return strings[sizeof(strings) / sizeof(*strings)];
 
-    return strm;
+
+}
+
+std::ostream& operator<< (std::ostream& strm, Log::severity level)
+{
+    stringstream* sstrm = new stringstream();
+//    *sstrm << static_cast<int>(level) << " " << static_cast<int>(Log::LogLevel) << " " ;
+	
+    if(Log::LogLevel >= level)
+    {
+	std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        char mbstr[100];
+        if (std::strftime(mbstr, sizeof(mbstr), "[%c] ", std::localtime(&t))) {
+           *sstrm << mbstr ;
+        }
+    	*sstrm << LogLevelToString(level);
+    }
+    else
+    {
+	*sstrm << "$SUPPRESSED$";
+    }
+    return *sstrm;
 }
 
 
+std::ostream& endl( ostream& os )
+{
+	try
+	{
+	stringstream& s = dynamic_cast<stringstream&>(os);
+        printf("%s\n", s.str().c_str()) ;
+	stringstream* s2strm = &s;
+	delete s2strm;
+	return cout;
+	}
+	catch(std::bad_cast)
+	{
+		return os << std::endl;
+	}
+}
+
+
+Log::severity Log::LogLevel = Log::severity::debug;
+
 void Log::init_logging(severity level) {
-/*    typedef sinks::synchronous_sink< sinks::text_ostream_backend > text_sink;
-    text_sink* sink = new text_sink();
-
-    boost::shared_ptr< std::ostream > stream(&std::clog, boost::null_deleter());
-    sink->locked_backend()->add_stream(stream);
-
-    sink->set_formatter
-    (
-        expr::stream
-            << expr::attr<boost::posix_time::ptime>("TimeStamp")
-            << ": [" << log_severity << "]\t"
-            << expr::smessage
-    );
-
-    sink->set_filter(log_severity <= level);
-
-    boost::shared_ptr< boost::log::core > core = boost::log::core::get();
-
-    core->add_sink(sink);
-    //TODO remove timestamp, journalctl will add it anyway?
-    core->add_global_attribute("TimeStamp", attrs::local_clock());
-
-*/
+	cout << Log::severity::debug << "Initializing Logging with Level " << LogLevelToString(level) << endl ;
+	LogLevel = level;
 }
 
 }
