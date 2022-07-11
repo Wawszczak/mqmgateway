@@ -15,7 +15,6 @@ ENV CMAKE_C_COMPILER gcc
 
 RUN mkdir -p build && cd build && cmake .. && make -j$(nproc)
 
-
 FROM --platform=$TARGETPLATFORM  alpine:3.16 AS target
 COPY --from=builder /app/build/modmqttd/modmqttd /app/modmqttd
 COPY --from=builder /app/build/exprconv.so /app/exprconv.so
@@ -24,5 +23,12 @@ COPY --from=builder /app/build/libmodmqttsrv/libmodmqttsrv.so /app/libmodmqttsrv
 RUN ln -s /app/libmodmqttsrv.so /usr/lib/libmodmqttsrv.so
 RUN ln -s /app/libmodmqttsrv.so /usr/lib/libmodmqttsrv.so.1
 
+RUN apk add --no-cache \
+    libstdc++ \
+    libgcc \
+    libmodbus \
+    mosquitto \
+    rapidjson \
+    yaml-cpp 
 
 CMD ["/app/modmqttd"]
