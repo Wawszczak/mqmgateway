@@ -8,7 +8,6 @@ add_executable(modmqttd
 target_link_libraries(modmqttd 
     modmqttsrv
     mosquitto 
-    spdlog::spdlog
     ${YAML_CPP_LIBRARIES} 
     ${Boost_LIBRARIES} 
     ${LIBMODBUS_LIBRARIES} 
