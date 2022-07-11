@@ -13,7 +13,7 @@ WORKDIR /app
 ENV CMAKE_CXX_COMPILER g++
 ENV CMAKE_C_COMPILER gcc
 
-RUN wget https://raw.githubusercontent.com/ArashPartow/exprtk/master/exprtk.hpp -O /usr/local/include
+RUN wget https://raw.githubusercontent.com/ArashPartow/exprtk/master/exprtk.hpp -O /usr/local/include/exprtk.hpp
 RUN mkdir -p build && cd build && cmake .. && make -j$(nproc)
 
 FROM --platform=$TARGETPLATFORM  alpine:3.16 AS target
