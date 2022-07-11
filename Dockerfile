@@ -1,10 +1,8 @@
 # special thanks to AluFers
 
-FROM  --platform=$TARGETPLATFORM  ubuntu:22.10 AS builder
+FROM  --platform=$TARGETPLATFORM  alpine:3.16 AS builder
 
-RUN apt-get update -y && apt-get install -y gcc-aarch64-linux-gnu \
-    libboost-all-dev libmodbus-dev libmosquitto-dev libmosquittopp-dev libyaml-cpp-dev rapidjson-dev \
-    build-essential cmake catch2 pkg-config
+RUN apk add --no-cache build-base catch2 cmake make gcc pkgconfig libmodbus-dev mosquitto-dev rapidjson-dev yaml-cpp-dev
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -12,17 +10,19 @@ ARG BUILDPLATFORM
 COPY . /app
 
 WORKDIR /app
+ENV CMAKE_CXX_COMPILER g++
+ENV CMAKE_C_COMPILER gcc
 
-RUN if [ "$TARGETPLATFORM" -eq "linux/arm64" ]; then export CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ ; fi \
-    && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+RUN mkdir -p build && cd build && cmake .. && make -j$(nproc)
 
 
-FROM --platform=$TARGETPLATFORM  ubuntu:22.10 AS target
+FROM --platform=$TARGETPLATFORM  alpine:3.16 AS target
 COPY --from=builder /app/build/modmqttd/modmqttd /app/modmqttd
+COPY --from=builder /app/build/exprconv.so /app/exprconv.so
+COPY --from=builder /app/build/stdconv.so /app/stdconv.so
 COPY --from=builder /app/build/libmodmqttsrv/libmodmqttsrv.so /app/libmodmqttsrv.so
 RUN ln -s /app/libmodmqttsrv.so /usr/lib/libmodmqttsrv.so
 RUN ln -s /app/libmodmqttsrv.so /usr/lib/libmodmqttsrv.so.1
 
-RUN apt-get update -y && apt-get install -y --no-upgrade libmosquitto1 libmodbus5 libyaml-cpp0.7 #libboost-log1.74 # boost1.74 
 
 CMD ["/app/modmqttd"]
