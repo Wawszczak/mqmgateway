@@ -18,8 +18,8 @@ RUN mkdir -p build && cd build && cmake .. && make -j$(nproc)
 
 FROM --platform=$TARGETPLATFORM  alpine:3.16 AS target
 COPY --from=builder /app/build/modmqttd/modmqttd /app/modmqttd
-COPY --from=builder /app/build/exprconv.so /app/exprconv.so
-COPY --from=builder /app/build/stdconv.so /app/stdconv.so
+COPY --from=builder /app/build/exprconv/exprconv.so /app/exprconv.so
+COPY --from=builder /app/build/stdconv/stdconv.so /app/stdconv.so
 COPY --from=builder /app/build/libmodmqttsrv/libmodmqttsrv.so /app/libmodmqttsrv.so
 RUN ln -s /app/libmodmqttsrv.so /usr/lib/libmodmqttsrv.so
 RUN ln -s /app/libmodmqttsrv.so /usr/lib/libmodmqttsrv.so.1
