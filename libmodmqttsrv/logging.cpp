@@ -61,7 +61,11 @@ std::ostream& endl( ostream& os )
 	try
 	{
 	stringstream& s = dynamic_cast<stringstream&>(os);
-        printf("%s\n", s.str().c_str()) ;
+	string msg = s.str();
+	if(msg.rfind("$SUPPRESSED$",0) == string::npos)
+	{
+        	printf("%s\n", msg.c_str()) ;
+	}
 	stringstream* s2strm = &s;
 	delete s2strm;
 	return cout;

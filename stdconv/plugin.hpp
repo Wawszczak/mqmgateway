@@ -12,4 +12,4 @@ class StdConvPlugin : ConverterPlugin {
 };
 
 //extern "C" BOOST_SYMBOL_EXPORT StdConvPlugin converter_plugin;
-StdConvPlugin converter_plugin;
+//StdConvPlugin converter_plugin;

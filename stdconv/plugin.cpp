@@ -5,6 +5,7 @@
 #include "int32.hpp"
 #include "bitmask.hpp"
 #include "scale.hpp"
+#include <memory>
 
 IStateConverter*
 StdConvPlugin::getStateConverter(const std::string& name) {
@@ -17,4 +18,9 @@ StdConvPlugin::getStateConverter(const std::string& name) {
     else if (name == "scale")
         return new ScaleConverter();
     return nullptr;
+}
+
+extern "C" std::shared_ptr<StdConvPlugin> ConverterFactory()
+{
+	return std::shared_ptr<StdConvPlugin>(new StdConvPlugin);
 }

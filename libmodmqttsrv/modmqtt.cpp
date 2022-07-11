@@ -198,16 +198,23 @@ ModMqtt::initServer(const YAML::Node& config) {
                 throw ConfigurationException(path_node.Mark(), "Converter plugin path must be a string");
 
             std::string path = path_node.as<std::string>();
-
+            cout << Log::severity::debug << "initServer(): Converter plugin path = " << path << endl;
             try {
                 std::shared_ptr<ConverterPlugin> plugin = initConverterPlugin(path);
+		if(plugin != nullptr)
+		{
                 if (hasConverterPlugin(plugin->getName())) {
                     throw ConfigurationException(config.Mark(), std::string("Converter plugin ") + plugin->getName() + " already loaded");
                 }
 
-                cout << Log::severity::info << "Added converter plugin " << plugin->getName() << endl;
+                cout << Log::severity::info << "initServer(): Added converter plugin " << plugin->getName() << endl;
                 mConverterPlugins.push_back(plugin);
-            } catch (const std::exception& ex) {
+ 		}
+		else
+		{
+			cout << Log::severity::error << "initServer(): Plugin not loaded correctly" << endl;
+		}
+     		} catch (const std::exception& ex) {
                 throw ConfigurationException(config.Mark(), ex.what());
             }
         }
@@ -215,20 +222,34 @@ ModMqtt::initServer(const YAML::Node& config) {
 }
 
 inline bool existsFile (const std::string& name) {
+	cout << Log::severity::debug << "existsFile(): name = " << name << endl ;
 	  struct stat buffer;   
 	    return (stat (name.c_str(), &buffer) == 0); 
 }
 
 inline std::shared_ptr<ConverterPlugin> loadDllPlugin(std::string final_path, std::string className)
 {
+	cout << Log::severity::debug << "loadDllPlugin(): final_path = " << final_path << "; className = " << className << endl;
 	void* handle = dlopen(final_path.c_str(), RTLD_LAZY);
+	cout << Log::severity::debug << "loadDllPlugin(): handle opened = " << handle << endl;
 
 	std::shared_ptr<ConverterPlugin> (*ConverterFactory)();
+	cout << Log::severity::debug << "loadDllPlugin(): ConverterFactory pointer created" << endl;
 
 	ConverterFactory = (std::shared_ptr<ConverterPlugin> (*)())dlsym(handle, "ConverterFactory");
-	
-	std::shared_ptr<ConverterPlugin> ConverterPluginPtr = ConverterFactory();
-	return ConverterPluginPtr;
+
+	cout << Log::severity::debug << "loadDllPlugin(): ConverterFactory loaded = " << ConverterFactory << endl ;
+	if(ConverterFactory)
+	{	
+		std::shared_ptr<ConverterPlugin> ConverterPluginPtr = ConverterFactory();
+		cout << Log::severity::debug << "loadDllPlugin(): ConverterFactory() called and returned " << ConverterPluginPtr << endl ;
+		return ConverterPluginPtr;
+	}
+	else
+	{
+		cout << Log::severity::error << "loadDllPlugin(): ConverterFactory() not found in library " << final_path << endl ;
+		return shared_ptr<ConverterPlugin>(nullptr);
+	}
 }
 
 std::shared_ptr<ConverterPlugin>
@@ -236,17 +257,21 @@ ModMqtt::initConverterPlugin(const std::string& name) {
     std::string final_path;
     std::string current_path = name;
     auto path_it = mConverterPaths.begin();
+    cout << Log::severity::debug << "initConverterPlugin(): Total paths = " << mConverterPaths.size() << endl;
     do {
-        cout << Log::severity::debug << "Checking " << current_path << endl ;
+        cout << Log::severity::debug << "initConverterPlugin(): Checking " << current_path << endl ;
         if (existsFile(current_path)) {
             final_path = current_path;
+	    cout << Log::severity::debug << "initConverterPlugin(): final_path = " << final_path << endl;
             break;
         }
 
         if (path_it == mConverterPaths.end()) {
+	    cout << Log::severity::debug << "initConverterPlugin(): end of converter Paths" << endl;
             break;
         }
 
+	cout << Log::severity::debug << "initConverterPlugin(): trying next path" << endl ;
         current_path = *path_it;
         current_path.append(name);
         path_it++;
@@ -256,7 +281,7 @@ ModMqtt::initConverterPlugin(const std::string& name) {
         throw ConvPluginNotFoundException(std::string("Converter plugin ") + name + " not found");
     }
 
-    cout <<Log::severity::debug << "Trying to load converter plugin from " << final_path << endl;
+    cout <<Log::severity::debug << "initConverterPlugin(): Trying to load converter plugin from " << final_path << endl;
 
     std::shared_ptr<ConverterPlugin> plugin = loadDllPlugin(
         final_path,
@@ -405,6 +430,7 @@ ModMqtt::createConverter(const YAML::Node& node) const {
 
 std::shared_ptr<IStateConverter>
 ModMqtt::createConverterInstance(const std::string pluginName, const std::string& converter) const {
+    cout << Log::severity::debug << "createConverterInstance(): pluginName = " << pluginName << "; converter = " << converter << endl;
     auto it = std::find_if(
         mConverterPlugins.begin(),
         mConverterPlugins.end(),
