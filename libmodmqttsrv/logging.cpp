@@ -43,9 +43,11 @@ std::ostream& operator<< (std::ostream& strm, Log::severity level)
     {
 	std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         char mbstr[100];
-        if (std::strftime(mbstr, sizeof(mbstr), "[%c] ", std::localtime(&t))) {
-           *sstrm << mbstr ;
-        }
+	struct tm tmi;
+	*sstrm << std::put_time(localtime_r(&t, &tmi), "[%c] " ); 
+        //if (std::strftime(mbstr, sizeof(mbstr), "[%c] ", std::localtime(&t))) {
+        //   *sstrm << mbstr ;
+        //}
     	*sstrm << LogLevelToString(level);
     }
     else

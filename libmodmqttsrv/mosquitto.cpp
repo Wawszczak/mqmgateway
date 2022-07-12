@@ -98,7 +98,7 @@ Mosquitto::Mosquitto() {
 
 void
 Mosquitto::connect(const MqttBrokerConfig& config) {
-    cout << Log::severity::info << "Connecting to " << config.mHost << ":" << config.mPort << endl;
+    cout << Log::severity::info << "Mosquitto::connect(" << mMosq << "): Connecting to " << config.mHost << ":" << config.mPort << endl;
     int rc = mosquitto_connect_async(mMosq, config.mHost.c_str(),
             config.mPort,
             config.mKeepalive);
@@ -121,10 +121,10 @@ Mosquitto::connect(const MqttBrokerConfig& config) {
         mosquitto_log_callback_set(mMosq, on_log_wrapper);
 
 
-        cout << Log::severity::debug << "Waiting for connection event" << endl;
+        cout << Log::severity::debug << "Mosquitto::connect(" << mMosq << "): Waiting for connection event" << endl;
         int rc = mosquitto_loop_start(mMosq);
         if (rc != MOSQ_ERR_SUCCESS) {
-            cout << Log::severity::error << "Error processing network traffic: " << returnCodeToStr(rc) << endl;
+            cout << Log::severity::error << "Mosquitto::connect(" << mMosq << "): Error processing network traffic: " << returnCodeToStr(rc) << endl;
         }
     }
 }
