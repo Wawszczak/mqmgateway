@@ -37,7 +37,7 @@ ModbusThread::pollRegisters(int slaveId, const std::vector<std::shared_ptr<Regis
             reg.mLastRead = std::chrono::steady_clock::now();
 
             std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-            cout << Log::severity::debug << "Register " << slaveId << "." << reg.mRegister << " (0x" << std::hex << slaveId << ".0x" << std::hex << reg.mRegister << ")"
+            cout << Log::severity::debug << "ModbusThread::pollRegisters(): Register " << slaveId << "." << reg.mRegister << " (0x" << std::hex << slaveId << ".0x" << std::hex << reg.mRegister << ")"
                             << " polled in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << endl;
 
             if ((reg.mLastValue != newValue) || !sendIfChanged || (reg.mReadErrors != 0)) {
@@ -45,7 +45,7 @@ ModbusThread::pollRegisters(int slaveId, const std::vector<std::shared_ptr<Regis
                 sendMessage(QueueItem::create(val));
                 reg.mLastValue = newValue;
                 reg.mReadErrors = 0;
-                cout << Log::severity::debug << "Register " << slaveId << "." << reg.mRegister
+                cout << Log::severity::debug << "ModbusThread::pollRegisters(): Register " << slaveId << "." << reg.mRegister
                     << " value sent, data=" << reg.mLastValue << endl;
             };
             //handle incoming write requests
@@ -62,7 +62,7 @@ ModbusThread::handleRegisterReadError(int slaveId, RegisterPoll& regPoll, const 
     // avoid flooding logs with register read error messages - log last error every 5 minutes
     regPoll.mReadErrors++;
     if (regPoll.mReadErrors == 1 || (std::chrono::steady_clock::now() - regPoll.mFirstErrorTime > RegisterPoll::DurationBetweenLogError)) {
-        cout << Log::severity::error << regPoll.mReadErrors << " error(s) when reading register "
+        cout << Log::severity::error << "ModbusThread::handleRegisterReadError(): " << regPoll.mReadErrors << " error(s) when reading register "
             << slaveId << "." << regPoll.mRegister << ", last error: " << errorMessage << endl;
         regPoll.mFirstErrorTime = std::chrono::steady_clock::now();
         if (regPoll.mReadErrors != 1)
@@ -84,14 +84,14 @@ ModbusThread::setPollSpecification(const MsgRegisterPollSpecification& spec) {
         std::shared_ptr<RegisterPoll> reg(new RegisterPoll(it->mRegister, it->mRegisterType, it->mRefreshMsec));
         mRegisters[it->mSlaveId].push_back(reg);
     }
-    cout << Log::severity::debug << "Poll specification set, got " << mRegisters.size() << " slaves," << spec.mRegisters.size() << " registers to poll" << endl;
+    cout << Log::severity::debug << "ModbusThread::setPollSpecification(): Poll specification set, got " << mRegisters.size() << " slaves," << spec.mRegisters.size() << " registers to poll" << endl;
 
     //now wait for MqttNetworkState(up)
 }
 
 void
 ModbusThread::doInitialPoll() {
-    cout << Log::debug << "starting initial poll" << endl;
+    cout << Log::debug << "ModbusThread::doInitialPoll(): starting initial poll" << endl;
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     for(std::map<int, std::vector<std::shared_ptr<RegisterPoll>>>::const_iterator slave = mRegisters.begin();
         slave != mRegisters.end(); slave++)
@@ -99,7 +99,7 @@ ModbusThread::doInitialPoll() {
         pollRegisters(slave->first, slave->second, false);
     }
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    cout << Log::severity::info << "Initial poll done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << endl;
+    cout << Log::severity::info << "ModbusThread::doInitialPoll(): Initial poll done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << endl;
     mNeedInitialPoll = false;
 }
 
@@ -137,7 +137,7 @@ ModbusThread::processWrite(const MsgRegisterValue& msg) {
             }
         }
     } catch (const ModbusWriteException& ex) {
-        cout << Log::severity::error << "error writing register "
+        cout << Log::severity::error << "ModbusThread::processWrite(): error writing register "
             << msg.mSlaveId << "." << msg.mRegisterNumber << ": " << ex.what() << endl;
         MsgRegisterWriteFailed msg(msg.mSlaveId, msg.mRegisterType, msg.mRegisterNumber);
         sendMessage(QueueItem::create(msg));
@@ -157,7 +157,7 @@ ModbusThread::dispatchMessages(const QueueItem& readed) {
         } else if (item.isSameAs(typeid(MsgRegisterPollSpecification))) {
             setPollSpecification(*item.getData<MsgRegisterPollSpecification>());
         } else if (item.isSameAs(typeid(EndWorkMessage))) {
-            cout << Log::severity::debug << "Got exit command" << endl;
+            cout << Log::severity::debug << "ModbusThread::dispatchMessages(): Got exit command" << endl;
             mShouldRun = false;
         } else if (item.isSameAs(typeid(MsgRegisterValue))) {
             processWrite(*item.getData<MsgRegisterValue>());
@@ -165,7 +165,7 @@ ModbusThread::dispatchMessages(const QueueItem& readed) {
             std::unique_ptr<MsgMqttNetworkState> netstate(item.getData<MsgMqttNetworkState>());
             mShouldPoll = netstate->mIsUp;
         } else {
-            cout << Log::severity::error << "Unknown messsage received, ignoring" << endl;
+            cout << Log::severity::error << "ModbusThread::dispatchMessages(): Unknown messsage received, ignoring" << endl;
         }
         gotItem = mToModbusQueue.try_dequeue(item);
     } while(gotItem);
@@ -187,7 +187,7 @@ ModbusThread::sendMessage(const QueueItem& item) {
 void
 ModbusThread::run() {
     try {
-        cout << Log::severity::debug << "Modbus thread started" << endl;
+        cout << Log::severity::debug << "ModbusThread::run(): Modbus thread started" << endl;
         const int maxReconnectTime = 60;
         std::chrono::steady_clock::duration waitDuration = std::chrono::steady_clock::duration::max();
         while(mShouldRun) {
@@ -195,10 +195,10 @@ ModbusThread::run() {
                 if (!mModbus->isConnected()) {
                     if (waitDuration > std::chrono::seconds(maxReconnectTime))
                         waitDuration = std::chrono::seconds(0);
-                    cout << Log::severity::info << "modbus: connecting" << endl;
+                    cout << Log::severity::info << "ModbusThread::run(): modbus: connecting" << endl;
                     mModbus->connect();
                     if (mModbus->isConnected()) {
-                        cout << Log::severity::info << "modbus: connected" << endl;
+                        cout << Log::severity::info << "ModbusThread::run(): modbus: connected" << endl;
                         sendMessage(QueueItem::create(MsgModbusNetworkState(mNetworkName, true)));
                         mNeedInitialPoll = true;
                     }
@@ -232,12 +232,12 @@ ModbusThread::run() {
                             auto pollDuration = std::chrono::steady_clock::now() - start;
                             waitDuration -= pollDuration;
                             if (waitDuration < std::chrono::steady_clock::duration::zero()) {
-                               cout << Log::severity::debug << "Next poll is eariler than current poll time (" <<  std::chrono::duration_cast<std::chrono::milliseconds>(waitDuration).count() << "ms)" << endl;
+                               cout << Log::severity::debug << "ModbusThread::run(): Next poll is eariler than current poll time (" <<  std::chrono::duration_cast<std::chrono::milliseconds>(waitDuration).count() << "ms)" << endl;
                                 waitDuration = std::chrono::steady_clock::duration::zero();
                             }
                         }
                     } else {
-                        cout << Log::severity::info << "Waiting for mqtt network to become online" << endl;
+                        cout << Log::severity::info << "ModbusThread::run(): Waiting for mqtt network to become online" << endl;
                         waitDuration = std::chrono::steady_clock::duration::max();
                     }
                 } else {
@@ -254,7 +254,7 @@ ModbusThread::run() {
             //for next poll if we are exiting
             if (mShouldRun) {
                 QueueItem item;
-                cout << Log::severity::debug << "Waiting " <<  std::chrono::duration_cast<std::chrono::milliseconds>(waitDuration).count() << "ms for messages" << endl;
+            //    cout << Log::severity::debug << "ModbusThread::run(): Waiting " <<  std::chrono::duration_cast<std::chrono::milliseconds>(waitDuration).count() << "ms for messages" << endl;
                 if (!mToModbusQueue.wait_dequeue_timed(item, waitDuration))
                     continue;
                 dispatchMessages(item);
@@ -262,11 +262,11 @@ ModbusThread::run() {
         };
         if (mModbus && mModbus->isConnected())
             mModbus->disconnect();
-       cout << Log::severity::debug << "Modbus thread " << mNetworkName << " ended" << endl;
+       cout << Log::severity::debug << "ModbusThread::run(): Modbus thread " << mNetworkName << " ended" << endl;
     } catch (const std::exception& ex) {
-        cout << Log::severity::critical << "Error in modbus thread " << mNetworkName << ": " << ex.what() << endl;
+        cout << Log::severity::critical << "ModbusThread::run(): Error in modbus thread " << mNetworkName << ": " << ex.what() << endl;
     } catch (...) {
-        cout << Log::severity::critical << "Unknown error in modbus thread " << mNetworkName << endl;
+        cout << Log::severity::critical << "ModbusThread::run(): Unknown error in modbus thread " << mNetworkName << endl;
     }
 }
 

@@ -137,10 +137,10 @@ ModMqtt::ModMqtt()
 }
 
 void ModMqtt::init(const std::string& configPath) {
-    cout << Log::severity::info << "Initializing ModMqtt..." << endl ;
+    cout << Log::severity::info << "ModMqtt::init(configPath): Initializing ModMqtt..." << endl ;
     std::string targetPath(configPath);
     if (configPath.empty()) {
-        cout << Log::severity::warn << "No config path, trying to read config.yaml from working directory" << endl;
+        cout << Log::severity::warn << "ModMqtt::init(configPath): No config path, trying to read config.yaml from working directory" << endl;
         targetPath = "./config.yaml";
     }
     YAML::Node config = YAML::LoadFile(targetPath);
@@ -162,9 +162,9 @@ ModMqtt::init(const YAML::Node& config) {
             [&netname](const std::shared_ptr<ModbusClient>& client) -> bool { return client->mName == netname; }
         );
         if (client == mModbusClients.end()) {
-             cout << Log::severity::error << "Modbus client for " << netname << " not initailized, ignoring specification" << endl;
+             cout << Log::severity::error << "ModMqtt::init(Node): Modbus client for " << netname << " not initailized, ignoring specification" << endl;
         } else {
-            cout << Log::severity::debug << "Sending register specification to modbus thread for network " << netname<< endl;
+            cout << Log::severity::debug << "ModMqtt::init(Node): Sending register specification to modbus thread for network " << netname<< endl;
             (*client)->mToModbusQueue.enqueue(QueueItem::create(*sit));
         }
     };
@@ -198,7 +198,7 @@ ModMqtt::initServer(const YAML::Node& config) {
                 throw ConfigurationException(path_node.Mark(), "Converter plugin path must be a string");
 
             std::string path = path_node.as<std::string>();
-            cout << Log::severity::debug << "initServer(): Converter plugin path = " << path << endl;
+            cout << Log::severity::debug << "ModMqtt::initServer(): Converter plugin path = " << path << endl;
             try {
                 std::shared_ptr<ConverterPlugin> plugin = initConverterPlugin(path);
 		if(plugin != nullptr)
@@ -207,12 +207,12 @@ ModMqtt::initServer(const YAML::Node& config) {
                     throw ConfigurationException(config.Mark(), std::string("Converter plugin ") + plugin->getName() + " already loaded");
                 }
 
-                cout << Log::severity::info << "initServer(): Added converter plugin " << plugin->getName() << endl;
+                cout << Log::severity::info << "ModMqtt::initServer(): Added converter plugin " << plugin->getName() << endl;
                 mConverterPlugins.push_back(plugin);
  		}
 		else
 		{
-			cout << Log::severity::error << "initServer(): Plugin not loaded correctly" << endl;
+			cout << Log::severity::error << "ModMqtt::initServer(): Plugin not loaded correctly" << endl;
 		}
      		} catch (const std::exception& ex) {
                 throw ConfigurationException(config.Mark(), ex.what());
@@ -257,21 +257,21 @@ ModMqtt::initConverterPlugin(const std::string& name) {
     std::string final_path;
     std::string current_path = name;
     auto path_it = mConverterPaths.begin();
-    cout << Log::severity::debug << "initConverterPlugin(): Total paths = " << mConverterPaths.size() << endl;
+    cout << Log::severity::debug << "ModMqtt::initConverterPlugin(): Total paths = " << mConverterPaths.size() << endl;
     do {
-        cout << Log::severity::debug << "initConverterPlugin(): Checking " << current_path << endl ;
+        cout << Log::severity::debug << "ModMqtt::initConverterPlugin(): Checking " << current_path << endl ;
         if (existsFile(current_path)) {
             final_path = current_path;
-	    cout << Log::severity::debug << "initConverterPlugin(): final_path = " << final_path << endl;
+	    cout << Log::severity::debug << "ModMqtt::initConverterPlugin(): final_path = " << final_path << endl;
             break;
         }
 
         if (path_it == mConverterPaths.end()) {
-	    cout << Log::severity::debug << "initConverterPlugin(): end of converter Paths" << endl;
+	    cout << Log::severity::debug << "ModMqtt::initConverterPlugin(): end of converter Paths" << endl;
             break;
         }
 
-	cout << Log::severity::debug << "initConverterPlugin(): trying next path" << endl ;
+	cout << Log::severity::debug << "ModMqtt::initConverterPlugin(): trying next path" << endl ;
         current_path = *path_it;
         current_path.append(name);
         path_it++;
@@ -281,7 +281,7 @@ ModMqtt::initConverterPlugin(const std::string& name) {
         throw ConvPluginNotFoundException(std::string("Converter plugin ") + name + " not found");
     }
 
-    cout <<Log::severity::debug << "initConverterPlugin(): Trying to load converter plugin from " << final_path << endl;
+    cout <<Log::severity::debug << "ModMqtt::initConverterPlugin(): Trying to load converter plugin from " << final_path << endl;
 
     std::shared_ptr<ConverterPlugin> plugin = loadDllPlugin(
         final_path,
@@ -306,7 +306,7 @@ void ModMqtt::initBroker(const YAML::Node& config) {
     MqttBrokerConfig brokerConfig(broker);
 
     mMqtt->setBrokerConfig(brokerConfig);
-    cout << Log::severity::debug << "Broker configuration initialized" << endl;
+    cout << Log::severity::debug << "ModMqtt::initBroker(): Broker configuration initialized" << endl;
 }
 
 void ModMqtt::initModbusClients(const YAML::Node& config) {
@@ -331,7 +331,7 @@ void ModMqtt::initModbusClients(const YAML::Node& config) {
         mModbusClients.push_back(modbus);
     }
     mMqtt->setModbusClients(mModbusClients);
-    cout << Log::severity::debug << "Modbus clients initialized" << endl ;
+    cout << Log::severity::debug << "ModMqtt::initModbusClients(): Modbus clients initialized" << endl ;
 }
 
 bool
@@ -430,7 +430,7 @@ ModMqtt::createConverter(const YAML::Node& node) const {
 
 std::shared_ptr<IStateConverter>
 ModMqtt::createConverterInstance(const std::string pluginName, const std::string& converter) const {
-    cout << Log::severity::debug << "createConverterInstance(): pluginName = " << pluginName << "; converter = " << converter << endl;
+    cout << Log::severity::debug << "ModMqtt::createConverterInstance(): pluginName = " << pluginName << "; converter = " << converter << endl;
     auto it = std::find_if(
         mConverterPlugins.begin(),
         mConverterPlugins.end(),
@@ -538,7 +538,7 @@ ModMqtt::initObjects(const YAML::Node& config)
         const YAML::Node& objdata = config_objects[i];
         MqttObject object(objdata);
 
-        cout << Log::severity::debug << "processing object " << object.getTopic() << endl;
+        cout << Log::severity::debug << "ModMqtt::initObjects(): processing object " << object.getTopic() << endl;
 
         std::string default_network;
         int default_slave = -1;
@@ -555,13 +555,13 @@ ModMqtt::initObjects(const YAML::Node& config)
             currentRefresh.pop();
 
         objects.push_back(object);
-        cout << Log::severity::debug << "object for topic " << object.getTopic() << " created" << endl;
+        cout << Log::severity::debug << "ModMqtt::initObjects(): object for topic " << object.getTopic() << " created" << endl;
     }
     if (hasGlobalRefresh)
         currentRefresh.pop();
 
     mMqtt->setObjects(objects);
-    cout << Log::severity::debug << "Finished reading config_objects specification" << endl;
+    cout << Log::severity::debug << "ModMqtt::initObjects(): Finished reading config_objects specification" << endl;
     return specs_out;
 }
 
@@ -590,7 +590,7 @@ ModMqtt::updateSpecification(
         );
 
     if (spec_it == specs.end()) {
-        cout << Log::severity::debug << "Creating new register specification for network " << rname.mNetworkName << endl; 
+        cout << Log::severity::debug << "ModMqtt::updateSpecification(): Creating new register specification for network " << rname.mNetworkName << endl; 
         specs.insert(specs.begin(), MsgRegisterPollSpecification(rname.mNetworkName));
         spec_it = specs.begin();
     }
@@ -606,7 +606,7 @@ ModMqtt::updateSpecification(
     );
 
     if (reg_it == spec_it->mRegisters.end()) {
-        cout << Log::severity::debug << "Adding new register " << poll.mRegister <<
+        cout << Log::severity::debug << "ModMqtt::updateSpecification(): Adding new register " << poll.mRegister <<
         " type=" << poll.mRegisterType << " refresh=" << poll.mRefreshMsec
         << " slaveId=" << rname.mSlaveId << " on network " << rname.mNetworkName << endl;
         spec_it->mRegisters.push_back(poll);
@@ -614,7 +614,7 @@ ModMqtt::updateSpecification(
         //set the shortest poll period of all occurences in config file
         if (reg_it->mRefreshMsec > poll.mRefreshMsec) {
             reg_it->mRefreshMsec = poll.mRefreshMsec;
-            cout << Log::severity::debug << "Setting refresh " << poll.mRefreshMsec << " on existing register " << poll.mRegister << endl;
+            cout << Log::severity::debug << "ModMqtt::updateSpecification(): Setting refresh " << poll.mRefreshMsec << " on existing register " << poll.mRegister << endl;
         }
     }
 
@@ -634,11 +634,11 @@ void ModMqtt::start() {
 
     // TODO if broker is down and modbus is up then mQueues will grow forever and
     // memory allocated by queues will never be released. Add MsgStartPolling?
-    cout << Log::severity::debug << "Performing initial connection to mqtt broker" << endl;
+    cout << Log::severity::debug << "ModMqtt::start(): Performing initial connection to mqtt broker" << endl;
     do {
         mMqtt->start();
         if (mMqtt->isConnected()) {
-            cout << Log::severity::debug << "Broker connected, entering main loop" << endl;
+            cout << Log::severity::debug << "ModMqtt::start(): Broker connected, entering main loop" << endl;
             break;
         }
         waitForSignal();
@@ -647,13 +647,13 @@ void ModMqtt::start() {
     while(mMqtt->isStarted()) {
         if (gSignalStatus == -1) {
             waitForQueues();
-            cout << Log::severity::debug << "Processing modbus queues" << endl;
+            cout << Log::severity::debug << "ModMqtt::start(): Processing modbus queues" << endl;
             processModbusMessages();
         } else if (gSignalStatus > 0) {
             int currentSignal = gSignalStatus;
             gSignalStatus = -1;
             if (currentSignal == SIGTERM) {
-                cout << Log::severity::info << "Got SIGTERM, exiting...." << endl;
+                cout << Log::severity::info << "ModMqtt::start(): Got SIGTERM, exiting...." << endl;
                 break;
             } else if (currentSignal == SIGHUP) {
                 //TODO reload configuratiion, reconect borker and
@@ -661,12 +661,12 @@ void ModMqtt::start() {
             }
             currentSignal = -1;
         } else if (gSignalStatus == 0) {
-            cout << Log::severity::info << "Got stop request, exiting...." << endl;
+            cout << Log::severity::info << "ModMqtt::start(): Got stop request, exiting...." << endl;
             break;
         }
     };
 
-    cout << Log::severity::info << "Stopping modbus clients" << endl;
+    cout << Log::severity::info << "ModMqtt::start(): Stopping modbus clients" << endl;
     for(std::vector<std::shared_ptr<ModbusClient>>::iterator client = mModbusClients.begin();
         client < mModbusClients.end(); client++)
     {
@@ -674,29 +674,29 @@ void ModMqtt::start() {
     }
 
     if (mMqtt->isConnected()) {
-        cout << Log::severity::info << "Publishing avaiability status 0 for all registers" << endl;
+        cout << Log::severity::info << "ModMqtt::start(): Publishing avaiability status 0 for all registers" << endl;
         for(std::vector<std::shared_ptr<ModbusClient>>::iterator client = mModbusClients.begin();
             client < mModbusClients.end(); client++)
         {
             mMqtt->processModbusNetworkState((*client)->mName, false);
         }
     }
-    cout << Log::severity::debug << "Shutting down mosquitto client" << endl;
+    cout << Log::severity::debug << "ModMqtt::start(): Shutting down mosquitto client" << endl;
     // If connected, then shutdown()
     // will send disconnection request to mqtt broker.
     // After disconnection mMqtt will notify global queue mutex
     // Otherwise we are already stopped.
     mMqtt->shutdown();
     if (mMqtt->isStarted()) {
-        cout << Log::severity::debug << "Waiting for disconnection event" << endl;
+        cout << Log::severity::debug << "ModMqtt::start(): Waiting for disconnection event" << endl;
         waitForQueues();
     }
-    cout << Log::severity::info << "Shutdown finished" << endl ;
+    cout << Log::severity::info << "ModMqtt::start(): Shutdown finished" << endl ;
 }
 
 void
 ModMqtt::stop() {
-    cout << Log::severity::debug << "Sending stop request to ModMqtt server" << endl;
+    cout << Log::severity::debug << "ModMqtt::stop(): Sending stop request to ModMqtt server" << endl;
     gSignalStatus = 0;
     notifyQueues();
 }

@@ -108,7 +108,7 @@ Mosquitto::connect(const MqttBrokerConfig& config) {
     }
 
     if (rc != MOSQ_ERR_SUCCESS) {
-        cout << Log::severity::error << "Error connecting to mqtt broker: " << returnCodeToStr(rc) << endl;
+        cout << Log::severity::error << "Mosquitto::connect(): Error connecting to mqtt broker: " << returnCodeToStr(rc) << endl;
     } else {
         mosquitto_reconnect_delay_set(mMosq, 3,60, true);
         mosquitto_connect_callback_set(mMosq, on_connect_wrapper);
@@ -165,13 +165,13 @@ Mosquitto::publish(const char* topic, int len, const void* data) {
 
 void
 Mosquitto::on_disconnect(int rc) {
-    cout << Log::severity::info << "Disconnected from mqtt broker, code:" << returnCodeToStr(rc) << endl;
+    cout << Log::severity::info << "Mosquitto::on_disconnect(): Disconnected from mqtt broker, code:" << returnCodeToStr(rc) << endl;
     mOwner->onDisconnect();
 }
 
 void
 Mosquitto::on_connect(int rc) {
-    cout <<Log::severity::info << "Connection estabilished" << endl;
+    cout <<Log::severity::info << "Mosquitto::on_connect(): Connection estabilished" << endl;
     mOwner->onConnect();
 }
 

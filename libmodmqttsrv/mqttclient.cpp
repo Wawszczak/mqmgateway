@@ -44,17 +44,17 @@ void
 MqttClient::shutdown() {
     switch(mConnectionState) {
         case State::CONNECTED:
-            cout << Log::severity::info << "Disconnecting from mqtt broker" << endl;
+            cout << Log::severity::info << "MqttClient::shutdown(): Disconnecting from mqtt broker" << endl;
             mConnectionState = State::DISCONNECTING;
             mMqttImpl->disconnect();
         break;
         case State::CONNECTING:
             //we do not send disconnect mqtt request if not connected
-            cout << Log::severity::info << "Cancelling connection request" << endl;
+            cout << Log::severity::info << "MqttClient::shutdown(): Cancelling connection request" << endl;
             mIsStarted = false;
             break;
         case State::DISCONNECTING:
-            cout << Log::severity::info << "Shutdown already in progress, waiting for clean disconnect" << endl;
+            cout << Log::severity::info << "MqttClient::shutdown(): Shutdown already in progress, waiting for clean disconnect" << endl;
             break;
         default:
             mIsStarted = false;
@@ -70,11 +70,11 @@ MqttClient::onDisconnect() {
     switch(mConnectionState) {
         case State::CONNECTED:
         case State::CONNECTING:
-            cout << Log::severity::info << "reconnecting to mqtt broker" << endl;
+            cout << Log::severity::info << "MqttClient::onDisconnect(): reconnecting to mqtt broker" << endl;
             mMqttImpl->reconnect();
             break;
         case State::DISCONNECTING:
-            cout << Log::severity::info << "Stopping mosquitto message loop" << endl;
+            cout << Log::severity::info << "MqttClient::onDisconnect(): Stopping mosquitto message loop" << endl;
             mConnectionState = State::DISCONNECTED;
             mMqttImpl->stop();
             mIsStarted = false;
@@ -86,7 +86,7 @@ MqttClient::onDisconnect() {
 
 void
 MqttClient::onConnect() {
-	cout << Log::severity::info << "Mqtt conected, sending subscriptions..." << endl;
+	cout << Log::severity::info << "MqttClient::onConnect(): Mqtt conected, sending subscriptions..." << endl;
 
     for(std::vector<MqttObject>::const_iterator obj = mObjects.begin(); obj != mObjects.end(); obj++)
         for(std::vector<MqttObjectCommand>::const_iterator it = obj->mCommands.begin(); it != obj->mCommands.end(); it++)
@@ -105,7 +105,7 @@ MqttClient::onConnect() {
         (*it)->sendMqttNetworkIsUp(true);
     }
 
-	cout << Log::severity::info << "Mqtt ready to process messages" << endl;
+	cout << Log::severity::info << "MqttClient::onConnect(): Mqtt ready to process messages" << endl;
 }
 
 void
@@ -144,7 +144,7 @@ void
 MqttClient::publishState(const MqttObject& obj) {
     int msgId;
     std::string messageData(obj.mState.createMessage());
-    cout << Log::severity::debug << "Publish on topic " << obj.getStateTopic() << ": " << messageData << endl;
+    cout << Log::severity::debug << "MqttClient::publishState(): Publish on topic " << obj.getStateTopic() << ": " << messageData << endl;
     mMqttImpl->publish(obj.getStateTopic().c_str(), messageData.length(), messageData.c_str());
 }
 
@@ -241,15 +241,15 @@ MqttClient::onMessage(const char* topic, const void* payload, int payloadlen) {
             [&network](const std::shared_ptr<ModbusClient>& client) -> bool { return client->mName == network; }
         );
         if (it == mModbusClients.end()) {
-            cout << Log::severity::error << "Modbus network " << network << " not found for command  " << topic << ", dropping message" << endl;
+            cout << Log::severity::error << "MqttClient::onMessage(): Modbus network " << network << " not found for command  " << topic << ", dropping message" << endl;
         } else {
             uint16_t value = convertMqttPayload(command, payload, payloadlen);
             (*it)->sendCommand(command, value);
         }
     } catch (const MqttPayloadConversionException& ex) {
-        cout << Log::error << "Value error for " << topic << ":" << ex.what() << endl;
+        cout << Log::error << "MqttClient::onMessage(): Value error for " << topic << ":" << ex.what() << endl;
     } catch (const ObjectCommandNotFoundException&) {
-        cout << Log::error << "No command for topic " << topic << ", dropping message" << endl;
+        cout << Log::error << "MqttClient::onMessage(): No command for topic " << topic << ", dropping message" << endl;
     }
 }
 
